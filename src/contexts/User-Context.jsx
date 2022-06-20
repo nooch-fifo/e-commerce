@@ -1,16 +1,45 @@
-import { createContext, useState, useEffect } from "react"
+import { createContext, useReducer, useEffect } from "react"
+
+import { createAction } from '../utilities/reducer-utils';
 import { onAuthStateChangedListener, signOutUser, createUserDocumentFromAuth } from "../utilities/firebase-utils";
 
-// Context allows for state values to be exposed to other components
 
 export const UserContext = createContext({
     currentUser: null,
     setCurrentUser: () => null,
 });
 
-// component that wraps around App component and thus any child component of App that needs access to the context/values inside
+
+export const USER_ACTION_TYPES = {
+    SET_CURRENT_USER: 'SET_CURRENT_USER',
+};
+
+const INITIAL_STATE = {
+    currentUser: null,
+};
+
+// function that returns desired object (currentUser) with updated state based on actions
+const userReducer = (state, action) => {
+    const { type, payload } = action;
+
+    switch (type) {
+        case USER_ACTION_TYPES.SET_CURRENT_USER:
+            return { ...state, currentUser: payload };
+        default:
+            throw new Error(`Unhandled type ${type} in userReducer`);
+    }
+};
+
+
 export const UserProvider = ({ children }) => {
-    const [currentUser, setCurrentUser] = useState(null);
+    // useReducer hook accepts a reducer function & initial state values
+    // useReducer hook returns updated state & dispatch function that passes an action into reducer function (switch statements)
+    const [{ currentUser }, dispatch] = useReducer(userReducer, INITIAL_STATE);
+
+    const setCurrentUser = (user) =>
+        dispatch(createAction(USER_ACTION_TYPES.SET_CURRENT_USER, user));
+
+
 
     useEffect(() => {
         const unsubscribe = onAuthStateChangedListener((user) => {
@@ -27,7 +56,6 @@ export const UserProvider = ({ children }) => {
         return unsubscribe;
     }, []);
 
-    // passing a value into provider allows that state to be called from anywhere in the component tree of the provider 
     const value = { currentUser, setCurrentUser };
     return <UserContext.Provider value={value}>{children}</UserContext.Provider>
 }
