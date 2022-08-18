@@ -5,16 +5,20 @@ import CartIcon from "../components/Cart-Icon";
 import CartDropdown from "../components/CartDropdown";
 
 import { CartContext } from "../contexts/Cart-Context";
-import { UserContext } from "../contexts/User-Context";
 
 import { ReactComponent as Logo } from "../assets/crown.svg";
 import { NavigationContainer, LogoContainer, NavLinks, NavLink } from '../styles/navbar.style'
 
 import { signOutUser } from "../utilities/firebase-utils";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "../store/user/user-selector";
 
 const Navbar = () => {
     // since useContext is accessing & changing state, it causes React to re-render
-    const { currentUser } = useContext(UserContext);
+    // const { currentUser } = useContext(UserContext);
+
+    // select values from Redux store & put into components
+    const currentUser = useSelector(selectCurrentUser);
     const { isCartOpen } = useContext(CartContext);
 
     return (
